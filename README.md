@@ -211,6 +211,7 @@ make verify
 | [Linux base install](docs/linux-base-install.md) | What this repo expects from an existing Linux Codex install. |
 | [Custom apps](docs/custom-apps.md) | Creating and updating side-by-side Codex apps. |
 | [MiniMax profile](docs/minimax.md) | MiniMax-specific config and test commands. |
+| [macOS local profile](docs/macos.md) | Experimental isolated MiniMax profile for macOS without touching the original app. |
 | [Automations](docs/automations.md) | MCP tool, runner, same-thread delivery, and limits. |
 | [Troubleshooting](docs/troubleshooting.md) | Icon, model, bridge, tool, and automation issues. |
 | [Publishing checklist](docs/publishing.md) | Final checks before pushing to GitHub. |
