@@ -4,6 +4,9 @@ Codex Custom Linux is built around isolation. A custom app should feel like the
 normal Codex Desktop app, but it must not share state, ports, launchers, icons,
 or model configuration with the primary install.
 
+This implementation was created by Adem İşler as a reusable Linux starter kit
+for building and publishing independent Codex Desktop profiles.
+
 ![Architecture diagram](assets/diagrams/architecture.svg)
 
 ## Layers
