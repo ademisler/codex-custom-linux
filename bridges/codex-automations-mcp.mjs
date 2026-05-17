@@ -4,7 +4,7 @@ import { dirname, join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { homedir } from "node:os";
 
-const codexHome = process.env.CODEX_AUTOMATIONS_HOME || process.env.CODEX_HOME || join(homedir(), ".codex-custom");
+const codexHome = process.env.CODEX_AUTOMATIONS_HOME || process.env.CODEX_HOME || join(homedir(), ".codex-custom-models");
 const automationsDir = join(codexHome, "automations");
 const sqlitePath = join(codexHome, "sqlite", "codex-dev.db");
 const defaultModel = process.env.CODEX_AUTOMATIONS_MODEL || process.env.CUSTOM_CODEX_MODEL || "MiniMax-M2.7";
@@ -314,7 +314,7 @@ async function handle(method, params = {}) {
     return {
       protocolVersion: params.protocolVersion || "2024-11-05",
       capabilities: { tools: { listChanged: false }, resources: { listChanged: false }, prompts: { listChanged: false } },
-      serverInfo: { name: "codex-custom-automations", version: "0.1.0" },
+      serverInfo: { name: "codex-custom-models-automations", version: "0.1.0" },
     };
   }
   if (method === "tools/list") return { tools };

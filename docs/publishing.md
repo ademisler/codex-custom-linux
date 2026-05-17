@@ -29,20 +29,24 @@ node --check bridges/*.mjs
 git init
 git add .
 git status
-git commit -m "Initial Codex Custom Linux starter kit"
+git commit -m "Initial Codex Desktop Custom Models starter kit"
 ```
 
 ## Suggested GitHub Description
 
-Open-source starter kit for isolated custom Codex Desktop apps on Linux, with
-provider bridges, MiniMax M2.7 config, custom icons, and local automations.
+Open-source starter kit for isolated Codex Desktop apps for custom model
+providers on macOS and Linux, with provider bridges, custom icons, and local
+automations.
 
 ## Suggested Topics
 
 ```text
 codex
 codex-app
+codex-desktop
+custom-models
 linux
+macos
 electron
 minimax
 openai-compatible

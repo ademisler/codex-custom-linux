@@ -1,6 +1,6 @@
 # Troubleshooting
 
-## The App Opens With The Original Icon
+## The Linux App Opens With The Original Icon
 
 Make sure the custom app has:
 
@@ -16,6 +16,18 @@ update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
 ```
 
 Log out and back in if your desktop shell still caches the old icon.
+
+## The macOS App Opens With The Original Icon
+
+Recreate the copied app bundle so the installer can rebuild `electron.icns`:
+
+```bash
+./scripts/install-minimax-profile-macos.sh --replace-app
+```
+
+The macOS installer recolors only the blue/purple cloud area from the copied
+Codex icon. It intentionally keeps the white background, terminal glyph,
+shadows, and rounded-square shape.
 
 ## Missing `.pak` Errors
 
@@ -58,7 +70,7 @@ Check the runner:
 
 ```bash
 codex-minimax-proxy automations-status
-codex-minimax-proxy automations-log
+codex-minimax-proxy automations-logs
 ```
 
 Run once with force:

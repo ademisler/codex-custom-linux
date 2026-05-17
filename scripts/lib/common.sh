@@ -2,11 +2,11 @@
 set -euo pipefail
 
 log() {
-  printf '[codex-custom-linux] %s\n' "$*" >&2
+  printf '[codex-desktop-custom-models] %s\n' "$*" >&2
 }
 
 die() {
-  printf '[codex-custom-linux] error: %s\n' "$*" >&2
+  printf '[codex-desktop-custom-models] error: %s\n' "$*" >&2
   exit 1
 }
 

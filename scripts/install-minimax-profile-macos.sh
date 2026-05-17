@@ -66,6 +66,8 @@ need_cmd node
 need_cmd plutil
 need_cmd ditto
 need_cmd codesign
+need_cmd swift
+need_cmd iconutil
 
 detect_base_app() {
   local candidates=(
@@ -301,7 +303,7 @@ case "\${1:-start}" in
   automations-start) start_automations ;;
   automations-stop) stop_pid_file "\$AUTOMATIONS_PID" ;;
   automations-status) status_pid_file "automations" "\$AUTOMATIONS_PID" ;;
-  automations-logs) tail -n 120 "\$AUTOMATIONS_LOG" ;;
+  automations-log|automations-logs) tail -n 120 "\$AUTOMATIONS_LOG" ;;
   *) echo "usage: \$0 {start|stop|restart|status|logs|test|automations-start|automations-stop|automations-status|automations-logs}" >&2; exit 2 ;;
 esac
 PROXY_EOF
@@ -311,19 +313,8 @@ cat >"$DESKTOP_WRAPPER" <<DESKTOP_EOF
 #!/usr/bin/env bash
 set -euo pipefail
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$PATH"
-CUSTOM_HOME="$CUSTOM_HOME"
-ENV_FILE="\$CUSTOM_HOME/minimax.env"
 "$PROXY_WRAPPER" start >/dev/null 2>&1 || true
-if [ -f "\$ENV_FILE" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "\$ENV_FILE"
-  set +a
-fi
-export CODEX_HOME="\$CUSTOM_HOME"
-export CODEX_CLI_PATH="$CLI_WRAPPER"
-export CODEX_WEBVIEW_PORT="\${CODEX_WEBVIEW_PORT:-$WEBVIEW_PORT}"
-exec "$APP_DIR/Contents/MacOS/Codex" "\$@"
+open -n "$APP_DIR" --args "\$@"
 DESKTOP_EOF
 chmod +x "$DESKTOP_WRAPPER"
 
@@ -344,42 +335,170 @@ PLIST="$APP_DIR/Contents/Info.plist"
 plutil -replace CFBundleName -string "$APP_NAME" "$PLIST"
 plutil -replace CFBundleDisplayName -string "$APP_NAME" "$PLIST"
 plutil -replace CFBundleIdentifier -string "com.ademisler.$APP_ID" "$PLIST"
+plutil -replace CFBundleExecutable -string "Codex" "$PLIST"
 if plutil -extract CFBundleURLTypes json -o /dev/null "$PLIST" >/dev/null 2>&1; then
   plutil -replace CFBundleURLTypes.0.CFBundleURLName -string "$APP_NAME" "$PLIST" || true
   plutil -replace CFBundleURLTypes.0.CFBundleURLSchemes.0 -string "$APP_ID" "$PLIST" || true
 fi
 
-MACOS_DIR="$APP_DIR/Contents/MacOS"
-if [ ! -f "$MACOS_DIR/Codex.bin" ]; then
-  mv "$MACOS_DIR/Codex" "$MACOS_DIR/Codex.bin"
-fi
+/usr/libexec/PlistBuddy -c "Delete :LSEnvironment" "$PLIST" >/dev/null 2>&1 || true
+/usr/libexec/PlistBuddy -c "Add :LSEnvironment dict" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSEnvironment:PATH string /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSEnvironment:CODEX_HOME string $CUSTOM_HOME" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSEnvironment:CODEX_CLI_PATH string $CLI_WRAPPER" "$PLIST"
+/usr/libexec/PlistBuddy -c "Add :LSEnvironment:CODEX_WEBVIEW_PORT string $WEBVIEW_PORT" "$PLIST"
 
-cat >"$MACOS_DIR/Codex" <<APP_EOF
-#!/usr/bin/env bash
-set -euo pipefail
-export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:\$PATH"
-CUSTOM_HOME="$CUSTOM_HOME"
-ENV_FILE="\$CUSTOM_HOME/minimax.env"
-"$PROXY_WRAPPER" start >/dev/null 2>&1 || true
-if [ -f "\$ENV_FILE" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "\$ENV_FILE"
-  set +a
+FRAMEWORKS_DIR="$APP_DIR/Contents/Frameworks"
+for suffix in "" " (GPU)" " (Plugin)" " (Renderer)"; do
+  OLD_HELPER="Codex Helper$suffix"
+  NEW_HELPER="$APP_NAME Helper$suffix"
+  OLD_HELPER_APP="$FRAMEWORKS_DIR/$OLD_HELPER.app"
+  NEW_HELPER_APP="$FRAMEWORKS_DIR/$NEW_HELPER.app"
+  [ -d "$OLD_HELPER_APP" ] || continue
+
+  if [ -f "$OLD_HELPER_APP/Contents/MacOS/$OLD_HELPER" ]; then
+    mv "$OLD_HELPER_APP/Contents/MacOS/$OLD_HELPER" "$OLD_HELPER_APP/Contents/MacOS/$NEW_HELPER"
+  fi
+
+  HELPER_PLIST="$OLD_HELPER_APP/Contents/Info.plist"
+  plutil -replace CFBundleExecutable -string "$NEW_HELPER" "$HELPER_PLIST"
+  plutil -replace CFBundleDisplayName -string "$NEW_HELPER" "$HELPER_PLIST"
+  if [ -z "$suffix" ]; then
+    plutil -replace CFBundleName -string "$APP_NAME" "$HELPER_PLIST"
+    plutil -replace CFBundleIdentifier -string "com.ademisler.$APP_ID.helper" "$HELPER_PLIST"
+  else
+    HELPER_KIND="$(printf '%s' "$suffix" | tr '[:upper:] ()' '[:lower:].' | tr -s '.' | sed 's/^\\.//; s/\\.$//')"
+    plutil -replace CFBundleName -string "$NEW_HELPER" "$HELPER_PLIST"
+    plutil -replace CFBundleIdentifier -string "com.ademisler.$APP_ID.helper.$HELPER_KIND" "$HELPER_PLIST"
+  fi
+
+  mv "$OLD_HELPER_APP" "$NEW_HELPER_APP"
+done
+
+ICON_WORK="$CUSTOM_HOME/icon-build"
+BASE_ICON="$BASE_APP/Contents/Resources/electron.icns"
+BASE_ICONSET="$ICON_WORK/base.iconset"
+ICONSET="$ICON_WORK/$APP_ID-red.iconset"
+ICON_ICNS="$ICON_WORK/$APP_ID.icns"
+if [ -f "$BASE_ICON" ]; then
+  rm -rf "$ICON_WORK"
+  mkdir -p "$ICON_WORK"
+  iconutil -c iconset "$BASE_ICON" -o "$BASE_ICONSET"
+  cp -R "$BASE_ICONSET" "$ICONSET"
+  for png in "$ICONSET"/*.png; do
+    swift - "$png" "$png" <<'SWIFT_ICON_TINT'
+import Foundation
+import CoreGraphics
+import ImageIO
+import UniformTypeIdentifiers
+
+let args = CommandLine.arguments
+guard args.count == 3 else { fatalError("usage: tint input output") }
+let input = URL(fileURLWithPath: args[1])
+let output = URL(fileURLWithPath: args[2])
+guard let source = CGImageSourceCreateWithURL(input as CFURL, nil),
+      let image = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
+    fatalError("cannot load image")
+}
+
+let width = image.width
+let height = image.height
+let bytesPerPixel = 4
+let bytesPerRow = width * bytesPerPixel
+var pixels = [UInt8](repeating: 0, count: height * bytesPerRow)
+let colorSpace = CGColorSpaceCreateDeviceRGB()
+guard let context = CGContext(
+    data: &pixels,
+    width: width,
+    height: height,
+    bitsPerComponent: 8,
+    bytesPerRow: bytesPerRow,
+    space: colorSpace,
+    bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+) else { fatalError("cannot create context") }
+
+context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+
+func rgbToHsv(_ r: Double, _ g: Double, _ b: Double) -> (h: Double, s: Double, v: Double) {
+    let maxValue = max(r, g, b)
+    let minValue = min(r, g, b)
+    let delta = maxValue - minValue
+    var hue = 0.0
+    if delta != 0 {
+        if maxValue == r {
+            hue = ((g - b) / delta).truncatingRemainder(dividingBy: 6.0)
+        } else if maxValue == g {
+            hue = ((b - r) / delta) + 2.0
+        } else {
+            hue = ((r - g) / delta) + 4.0
+        }
+        hue *= 60.0
+        if hue < 0 { hue += 360.0 }
+    }
+    let saturation = maxValue == 0 ? 0 : delta / maxValue
+    return (hue, saturation, maxValue)
+}
+
+func hsvToRgb(_ h: Double, _ s: Double, _ v: Double) -> (r: Double, g: Double, b: Double) {
+    let c = v * s
+    let x = c * (1.0 - abs((h / 60.0).truncatingRemainder(dividingBy: 2.0) - 1.0))
+    let m = v - c
+    let hp = h / 60.0
+    let rgb: (Double, Double, Double)
+    switch hp {
+    case 0..<1: rgb = (c, x, 0)
+    case 1..<2: rgb = (x, c, 0)
+    case 2..<3: rgb = (0, c, x)
+    case 3..<4: rgb = (0, x, c)
+    case 4..<5: rgb = (x, 0, c)
+    default: rgb = (c, 0, x)
+    }
+    return (rgb.0 + m, rgb.1 + m, rgb.2 + m)
+}
+
+for i in stride(from: 0, to: pixels.count, by: 4) {
+    let alpha = pixels[i + 3]
+    if alpha < 20 { continue }
+    let r = Double(pixels[i]) / 255.0
+    let g = Double(pixels[i + 1]) / 255.0
+    let b = Double(pixels[i + 2]) / 255.0
+    let hsv = rgbToHsv(r, g, b)
+
+    // Recolor the saturated blue/purple Codex cloud while preserving the
+    // white background, white terminal glyph, shadows, and highlights.
+    let isBlueCloud = hsv.s > 0.205 && hsv.v > 0.22 && hsv.h >= 205.0 && hsv.h <= 275.0
+    if !isBlueCloud { continue }
+
+    let out = hsvToRgb(356.0, min(1.0, hsv.s * 1.03), min(1.0, hsv.v * 1.01))
+    pixels[i] = UInt8((out.r * 255.0).rounded())
+    pixels[i + 1] = UInt8((out.g * 255.0).rounded())
+    pixels[i + 2] = UInt8((out.b * 255.0).rounded())
+}
+
+guard let outImage = context.makeImage(),
+      let destination = CGImageDestinationCreateWithURL(output as CFURL, UTType.png.identifier as CFString, 1, nil) else {
+    fatalError("cannot create output")
+}
+CGImageDestinationAddImage(destination, outImage, nil)
+guard CGImageDestinationFinalize(destination) else { fatalError("cannot write output") }
+SWIFT_ICON_TINT
+  done
+  iconutil -c icns "$ICONSET" -o "$ICON_ICNS"
+  cp "$ICON_ICNS" "$APP_DIR/Contents/Resources/electron.icns"
+  cp "$ICON_ICNS" "$APP_DIR/Contents/Resources/icon.icns"
+  plutil -replace CFBundleIconFile -string "electron.icns" "$PLIST"
+  plutil -replace CFBundleIconName -string "$APP_ID" "$PLIST"
+else
+  log "warning: could not find $BASE_ICON; keeping copied Codex icon"
 fi
-export CODEX_HOME="\$CUSTOM_HOME"
-export CODEX_CLI_PATH="$CLI_WRAPPER"
-export CODEX_WEBVIEW_PORT="\${CODEX_WEBVIEW_PORT:-$WEBVIEW_PORT}"
-exec "\$(dirname "\$0")/Codex.bin" "\$@"
-APP_EOF
-chmod +x "$MACOS_DIR/Codex"
 
 rm -rf "$APP_DIR/Contents/_CodeSignature"
 codesign --force --deep --sign - "$APP_DIR" >/dev/null 2>&1 || log "warning: ad-hoc codesign failed; the copied app may need manual approval in macOS Privacy & Security"
 xattr -dr com.apple.quarantine "$APP_DIR" 2>/dev/null || true
 touch "$APP_DIR"
+/usr/bin/mdimport "$APP_DIR" >/dev/null 2>&1 || true
 
-if [ "$ENV_NEEDS_KEY" -eq 1 ]; then
+if [ "$ENV_NEEDS_KEY" -eq 1 ] && grep -q 'replace-me' "$ENV_FILE" 2>/dev/null; then
   log "provider env needs MINIMAX_API_KEY before testing: $ENV_FILE"
 fi
 log "CLI wrapper: $CLI_WRAPPER"

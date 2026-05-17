@@ -1,10 +1,10 @@
 # Contributing
 
-Thanks for improving Codex Custom Linux.
+Thanks for improving Codex Desktop Custom Models.
 
-Codex Custom Linux is an open-source project. Contributions should preserve the
-project's goal: isolated, provider-specific Codex Desktop apps that are safe to
-publish and easy to inspect.
+Codex Desktop Custom Models is an open-source project. Contributions should
+preserve the project's goal: isolated, provider-specific Codex Desktop apps
+that are safe to publish and easy to inspect.
 
 ## Ground Rules
 

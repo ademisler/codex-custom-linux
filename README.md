@@ -1,12 +1,12 @@
 <p align="center">
-  <img src="docs/assets/hero/codex-custom-linux-hero.png" alt="Codex Custom Linux" width="100%">
+  <img src="docs/assets/hero/codex-desktop-custom-models-hero.png" alt="Codex Desktop Custom Models" width="100%">
 </p>
 
-<h1 align="center">Codex Custom Linux</h1>
+<h1 align="center">Codex Desktop Custom Models</h1>
 
 <p align="center">
-  Create isolated custom Codex Desktop apps on Linux, with separate icons,
-  separate state, custom providers, and optional automations.
+  Create isolated Codex Desktop apps for custom model providers on macOS and
+  Linux, with separate icons, state, provider bridges, and automations.
 </p>
 
 <p align="center">
@@ -18,8 +18,9 @@
 
 ## What This Is
 
-Codex Custom Linux is a starter kit for people who already have Codex Desktop
-running on Linux and want a second, independent Codex app.
+Codex Desktop Custom Models is a starter kit for people who already have Codex
+Desktop installed and want a second, independent Codex app for a custom model
+provider.
 
 The reference app is **Codex MiniMax**: a red-icon Codex Desktop profile that
 uses MiniMax M2.7 through a local OpenAI-compatible bridge.
@@ -28,7 +29,7 @@ It does not modify your original Codex app. Your normal Codex install keeps its
 own config, data, sessions, provider, icon, and launcher.
 
 <p align="center">
-  <img src="docs/assets/screenshots/codex-minimax-app.png" alt="Codex MiniMax running as a separate Linux app" width="100%">
+  <img src="docs/assets/screenshots/codex-minimax-app.png" alt="Codex MiniMax running as a separate Codex Desktop app" width="100%">
 </p>
 
 ## Open Source
@@ -44,6 +45,7 @@ it for other providers, and contribute fixes through pull requests.
 | Separate `CODEX_HOME` | Keeps custom app state away from your main `~/.codex`. |
 | Provider bridge | Converts Codex Responses API calls into OpenAI-compatible Chat Completions calls. |
 | MiniMax profile | Ready example for MiniMax M2.7 using your own API key. |
+| macOS and Linux paths | Supports a macOS app-bundle profile and a Linux desktop-shell profile. |
 | Automation support | Local MCP server and runner for reminders, monitors, and same-thread follow-ups. |
 | Publishing assets | Clean README hero, real screenshot, red icon, diagrams, examples, and docs. |
 
@@ -58,37 +60,24 @@ After setup you can have both apps installed at the same time:
 | Uses the default provider config | Uses MiniMax M2.7 through the bridge |
 | Keeps its own automation state | Has a separate automation MCP and runner |
 
-## Quick Start
+## Quick Start: macOS
 
 ### 1. Requirements
 
 You need:
 
-- A working Linux Codex Desktop installation.
+- A working macOS Codex Desktop installation.
 - The `codex` CLI on your `PATH`.
 - `node` 18 or newer.
-- `sqlite3`.
-- `systemd --user`, recommended for background services.
-- `magick` from ImageMagick, optional for automatic icon recoloring.
+- `swift` and `iconutil` for generating the custom macOS icon.
+- A MiniMax API key, or another OpenAI-compatible provider you adapt later.
 
-If you do not have Codex Desktop running on Linux yet, start here:
-[Linux base install](docs/linux-base-install.md).
-
-### 2. Check Your Machine
-
-```bash
-./scripts/bootstrap.sh
-```
-
-### 3. Install the MiniMax App
-
-Set your API key only in your shell or generated private env file. Do not commit
-it.
+### 2. Install the MiniMax App
 
 ```bash
 export MINIMAX_API_KEY="<your-minimax-api-key>"
 
-./scripts/install-minimax-profile.sh \
+./scripts/install-minimax-profile-macos.sh \
   --id codex-minimax \
   --name "Codex MiniMax" \
   --model "MiniMax-M2.7" \
@@ -99,15 +88,14 @@ export MINIMAX_API_KEY="<your-minimax-api-key>"
 The installer creates:
 
 ```text
-~/.local/opt/codex-minimax/codex-app
-~/.local/share/applications/codex-minimax.desktop
+~/Applications/Codex MiniMax.app
 ~/.local/bin/codex-minimax
 ~/.local/bin/codex-minimax-desktop
 ~/.local/bin/codex-minimax-proxy
 ~/.codex-minimax
 ```
 
-### 4. Test and Launch
+### 3. Test and Launch
 
 ```bash
 codex-minimax-proxy start
@@ -117,14 +105,53 @@ codex-minimax-desktop
 
 If the health check and small response test pass, the custom app is ready.
 
-### 5. Remove It Later
+## Quick Start: Linux
+
+You need a working Linux Codex Desktop installation, the `codex` CLI, `node` 18
+or newer, `sqlite3`, and preferably `systemd --user`. If you do not have Codex
+Desktop running on Linux yet, start with [Linux base install](docs/linux-base-install.md).
+
+```bash
+./scripts/bootstrap.sh
+
+export MINIMAX_API_KEY="<your-minimax-api-key>"
+
+./scripts/install-minimax-profile.sh \
+  --id codex-minimax \
+  --name "Codex MiniMax" \
+  --model "MiniMax-M2.7" \
+  --port 4007 \
+  --webview-port 5176
+```
+
+Then launch it:
+
+```bash
+codex-minimax-proxy start
+codex-minimax-proxy test
+codex-minimax-desktop
+```
+
+## Remove It Later
+
+On Linux:
 
 ```bash
 ./scripts/uninstall-custom-app.sh --id codex-minimax
 ```
 
-The custom `CODEX_HOME` is kept by default. Add `--purge-home` only if you also
-want to delete the custom profile data.
+On macOS:
+
+```bash
+codex-minimax-proxy stop
+rm -rf "$HOME/Applications/Codex MiniMax.app"
+rm -f "$HOME/.local/bin/codex-minimax" \
+  "$HOME/.local/bin/codex-minimax-desktop" \
+  "$HOME/.local/bin/codex-minimax-proxy"
+```
+
+The custom `CODEX_HOME` is kept by default. Remove `~/.codex-minimax` only if
+you also want to delete the custom profile data.
 
 ## How It Works
 
@@ -165,8 +192,10 @@ See [Automations](docs/automations.md) for the exact behavior.
 
 ## Generic Custom Apps
 
-MiniMax is the reference profile, not the limit. To create a different custom
-app shell:
+MiniMax is the reference profile, not the limit. The bridge and config templates
+can be reused for other OpenAI-compatible providers.
+
+On Linux, create a different custom app shell with:
 
 ```bash
 ./scripts/create-custom-codex-app.sh \
@@ -177,11 +206,16 @@ app shell:
   --icon-color "#dc2626"
 ```
 
-Then adapt:
+Then adapt the provider config:
 
 - [templates/config.toml.template](templates/config.toml.template)
 - [templates/custom.env.example](templates/custom.env.example)
 - [examples/providers/openai-compatible.toml](examples/providers/openai-compatible.toml)
+
+On macOS, duplicate the MiniMax installer pattern when you need another provider:
+copy the base `.app`, assign a unique bundle id, generate a separate icon, point
+`CODEX_HOME` at a new profile directory, and run the provider through the same
+Responses bridge.
 
 ## Safety
 
@@ -211,7 +245,7 @@ make verify
 | [Linux base install](docs/linux-base-install.md) | What this repo expects from an existing Linux Codex install. |
 | [Custom apps](docs/custom-apps.md) | Creating and updating side-by-side Codex apps. |
 | [MiniMax profile](docs/minimax.md) | MiniMax-specific config and test commands. |
-| [macOS local profile](docs/macos.md) | Experimental isolated MiniMax profile for macOS without touching the original app. |
+| [macOS local profile](docs/macos.md) | Isolated MiniMax profile for macOS without touching the original app. |
 | [Automations](docs/automations.md) | MCP tool, runner, same-thread delivery, and limits. |
 | [Troubleshooting](docs/troubleshooting.md) | Icon, model, bridge, tool, and automation issues. |
 | [Publishing checklist](docs/publishing.md) | Final checks before pushing to GitHub. |
@@ -227,8 +261,9 @@ Linux packaging projects already help with the base desktop app:
 - [better-slop/codex-app-linux](https://github.com/better-slop/codex-app-linux)
 - [ilysenko/codex-desktop-linux](https://github.com/ilysenko/codex-desktop-linux)
 
-This repo focuses on the missing layer: clean, isolated, provider-specific
-Codex Desktop apps that can live next to your main Codex installation.
+This repo focuses on the missing layer across desktop platforms: clean,
+isolated, provider-specific Codex Desktop apps that can live next to your main
+Codex installation.
 
 ## Project Status
 

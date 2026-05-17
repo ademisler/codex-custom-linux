@@ -23,11 +23,11 @@ The MiniMax installer adds this to the generated `config.toml`:
 ```toml
 [mcp_servers.codex-automations]
 command = "node"
-args = ["/home/USER/.codex-minimax/codex-automations-mcp.mjs"]
+args = ["<custom-home>/codex-automations-mcp.mjs"]
 enabled = true
 startup_timeout_sec = 10
 default_tools_approval_mode = "approve"
-env = { CODEX_AUTOMATIONS_HOME = "/home/USER/.codex-minimax" }
+env = { CODEX_AUTOMATIONS_HOME = "<custom-home>", CODEX_CUSTOM_BIN = "<custom-bin>" }
 ```
 
 The path is generated for your actual home directory. Do not hardcode it in a
@@ -66,7 +66,7 @@ For background execution use the generated proxy:
 ```bash
 codex-minimax-proxy automations-start
 codex-minimax-proxy automations-status
-codex-minimax-proxy automations-log
+codex-minimax-proxy automations-logs
 ```
 
 ## Limits

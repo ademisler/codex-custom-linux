@@ -87,9 +87,10 @@ CUSTOM_CODEX_API_BASE=$ENV_API_BASE
 CUSTOM_CODEX_API_KEY="\$MINIMAX_API_KEY"
 CUSTOM_CODEX_MODEL=$ENV_MODEL
 CUSTOM_CODEX_SUPPORTED_MODELS=$ENV_SUPPORTED_MODELS
-CUSTOM_CODEX_PROXY_HOST='127.0.0.1'
-CUSTOM_CODEX_PROXY_PORT=$ENV_PROXY_PORT
-CUSTOM_CODEX_DEBUG_LOG=$ENV_DEBUG_LOG
+  CUSTOM_CODEX_PROXY_HOST='127.0.0.1'
+  CUSTOM_CODEX_PROXY_PORT=$ENV_PROXY_PORT
+  CUSTOM_CODEX_DEBUG_LOG=$ENV_DEBUG_LOG
+CUSTOM_CODEX_MAX_TOKENS_FIELD='max_completion_tokens'
 ENV_EOF
   chmod 600 "$ENV_FILE"
 elif [ ! -f "$ENV_FILE" ]; then
@@ -193,6 +194,7 @@ load_env() {
   export CUSTOM_CODEX_PROXY_HOST="\${CUSTOM_CODEX_PROXY_HOST:-127.0.0.1}"
   export CUSTOM_CODEX_PROXY_PORT="\${CUSTOM_CODEX_PROXY_PORT:-$BRIDGE_PORT}"
   export CUSTOM_CODEX_DEBUG_LOG="\${CUSTOM_CODEX_DEBUG_LOG:-\$CUSTOM_HOME/bridge-debug.log}"
+  export CUSTOM_CODEX_MAX_TOKENS_FIELD="\${CUSTOM_CODEX_MAX_TOKENS_FIELD:-max_completion_tokens}"
 }
 
 systemd_available() {
@@ -237,6 +239,7 @@ start_bridge() {
           CUSTOM_CODEX_PROXY_HOST="\$CUSTOM_CODEX_PROXY_HOST" \
           CUSTOM_CODEX_PROXY_PORT="\$CUSTOM_CODEX_PROXY_PORT" \
           CUSTOM_CODEX_DEBUG_LOG="\$CUSTOM_CODEX_DEBUG_LOG" \
+          CUSTOM_CODEX_MAX_TOKENS_FIELD="\$CUSTOM_CODEX_MAX_TOKENS_FIELD" \
           node "\$CUSTOM_HOME/openai-compatible-responses-bridge.mjs" || true
   else
     mkdir -p "\$CUSTOM_HOME"
@@ -248,6 +251,7 @@ start_bridge() {
       CUSTOM_CODEX_PROXY_HOST="\$CUSTOM_CODEX_PROXY_HOST" \
       CUSTOM_CODEX_PROXY_PORT="\$CUSTOM_CODEX_PROXY_PORT" \
       CUSTOM_CODEX_DEBUG_LOG="\$CUSTOM_CODEX_DEBUG_LOG" \
+      CUSTOM_CODEX_MAX_TOKENS_FIELD="\$CUSTOM_CODEX_MAX_TOKENS_FIELD" \
       node "\$CUSTOM_HOME/openai-compatible-responses-bridge.mjs" >>"\$BRIDGE_LOG" 2>&1 &
     echo "\$!" >"\$BRIDGE_PID"
   fi
@@ -310,8 +314,8 @@ case "\${1:-start}" in
     systemctl --user status "\$AUTOMATIONS_UNIT.service" --no-pager 2>/dev/null || true
     status_pid_file "automations" "\$AUTOMATIONS_PID"
     ;;
-  automations-log) journalctl --user -u "\$AUTOMATIONS_UNIT.service" -n 120 --no-pager 2>/dev/null || tail -n 120 "\$AUTOMATIONS_LOG" ;;
-  *) echo "Usage: \$0 start|stop|restart|status|logs|test|automations-start|automations-stop|automations-status|automations-log" >&2; exit 2 ;;
+  automations-log|automations-logs) journalctl --user -u "\$AUTOMATIONS_UNIT.service" -n 120 --no-pager 2>/dev/null || tail -n 120 "\$AUTOMATIONS_LOG" ;;
+  *) echo "Usage: \$0 start|stop|restart|status|logs|test|automations-start|automations-stop|automations-status|automations-logs" >&2; exit 2 ;;
 esac
 PROXY_EOF
 chmod +x "$PROXY_WRAPPER"

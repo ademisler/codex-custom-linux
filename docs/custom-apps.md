@@ -3,7 +3,11 @@
 A custom Codex app is a side-by-side clone with its own identity and runtime
 state.
 
-## Create One
+## Linux Shell Apps
+
+The generic app creator currently targets Linux desktop shells. It creates a
+copy/symlink hybrid from an existing Linux Codex Desktop app directory and gives
+the result its own launcher, icon, webview port, and `CODEX_HOME`.
 
 ```bash
 ./scripts/create-custom-codex-app.sh \
@@ -59,3 +63,15 @@ When the base Codex app updates, recreate the custom shell:
 ```
 
 The custom `CODEX_HOME` remains separate and is not deleted.
+
+## macOS App Bundles
+
+On macOS, app identity lives inside the `.app` bundle and its helper bundles.
+Use `scripts/install-minimax-profile-macos.sh` as the reference implementation:
+it copies the base Codex app, patches bundle identifiers, sets isolated
+environment variables, generates the red custom icon from the original icon, and
+ad-hoc signs the copied app.
+
+For another provider, keep the same structure but choose a new app id, app name,
+`CODEX_HOME`, bridge port, webview port, model name, and provider environment
+file.

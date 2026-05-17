@@ -1,23 +1,25 @@
 # Architecture
 
-Codex Custom Linux is built around isolation. A custom app should feel like the
-normal Codex Desktop app, but it must not share state, ports, launchers, icons,
-or model configuration with the primary install.
+Codex Desktop Custom Models is built around isolation. A custom app should feel
+like the normal Codex Desktop app, but it must not share state, ports,
+launchers, icons, or model configuration with the primary install.
 
 ![Architecture diagram](assets/diagrams/architecture.svg)
 
 ## Layers
 
-1. **Base Codex Desktop for Linux**
-   - Installed by an existing Linux Codex project or by your own local build.
-   - Provides Electron, the webview bundle, bundled runtime files, and desktop
-     launcher behavior.
+1. **Base Codex Desktop**
+   - Installed normally on macOS, or installed on Linux through an existing
+     community package/build.
+   - Provides Electron, the webview bundle, bundled runtime files, and launcher
+     behavior.
 
 2. **Custom App Clone**
-   - A separate directory under `~/.local/opt/<app-id>/codex-app`.
-   - Heavy runtime files are symlinked to the base app.
-   - Files that need branding or app identity are copied.
-   - `start.sh` is patched with a unique app id, display name, and webview port.
+   - On macOS, a copied `.app` bundle under `~/Applications`.
+   - On Linux, a side-by-side app directory under `~/.local/opt/<app-id>`.
+   - Files that need branding or app identity are copied or patched.
+   - The clone gets a unique display name, bundle/app id, icon, and webview
+     port.
 
 3. **Custom Codex Home**
    - A separate `CODEX_HOME`, for example `~/.codex-minimax`.
@@ -50,8 +52,8 @@ items to Codex.
 
 ## Why Copy Some Files
 
-The custom app can symlink most runtime files. A few files should be copied so
-the app can have independent identity:
+The Linux custom app can symlink most runtime files. A few files should be
+copied so the app can have independent identity:
 
 - `start.sh` because it contains the Linux app id, display name, icon name, and
   webview port.
@@ -60,5 +62,8 @@ the app can have independent identity:
 - `content/` when branding assets need to differ.
 - `resources/` directory itself, while linking large inner files.
 
-This keeps disk usage low while avoiding confusing taskbar grouping and icon
-collisions.
+The macOS custom app copies the bundle because LaunchServices, helper app
+names, bundle identifiers, and `.icns` assets are app-bundle concerns.
+
+Both paths avoid confusing taskbar/Dock grouping, icon collisions, and shared
+profile state.

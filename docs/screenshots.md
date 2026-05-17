@@ -6,7 +6,7 @@ empty start area.
 
 Assets:
 
-- `assets/hero/codex-custom-linux-hero.png`
+- `assets/hero/codex-desktop-custom-models-hero.png`
 - `assets/screenshots/codex-minimax-app.png`
 - `assets/diagrams/architecture.svg`
 - `assets/icons/custom-codex-red.svg`

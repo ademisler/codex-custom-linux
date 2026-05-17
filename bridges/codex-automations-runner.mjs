@@ -5,7 +5,7 @@ import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import { homedir } from "node:os";
 
-const codexHome = process.env.CODEX_AUTOMATIONS_HOME || process.env.CODEX_HOME || join(homedir(), ".codex-custom");
+const codexHome = process.env.CODEX_AUTOMATIONS_HOME || process.env.CODEX_HOME || join(homedir(), ".codex-custom-models");
 const automationsDir = join(codexHome, "automations");
 const sqlitePath = join(codexHome, "sqlite", "codex-dev.db");
 const runnerStatePath = join(automationsDir, ".runner-state.json");

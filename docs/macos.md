@@ -1,9 +1,8 @@
 # macOS Local Profile
 
-The Linux installer is the primary target of this repository, but the same
-provider bridge can be used on macOS without modifying the original Codex app.
-
-The macOS installer creates a separate app bundle and a separate `CODEX_HOME`:
+The macOS installer creates an isolated Codex Desktop profile for a custom model
+provider without modifying the original Codex app. It creates a separate app
+bundle and a separate `CODEX_HOME`:
 
 ```text
 ~/Applications/Codex MiniMax.app
@@ -14,9 +13,20 @@ The macOS installer creates a separate app bundle and a separate `CODEX_HOME`:
 ```
 
 It copies `/Applications/Codex.app` into your user Applications folder, patches
-only the copied bundle, and launches it with isolated environment variables.
-The original `/Applications/Codex.app` and your normal `~/.codex` profile are
-left untouched.
+only the copied bundle, gives the helper apps and icon a custom identity, and
+launches it with isolated environment variables. The original
+`/Applications/Codex.app` and your normal `~/.codex` profile are left untouched.
+
+The icon keeps the original Codex shape and white background. Only the saturated
+blue/purple cloud area is recolored to red, so it stays visually related to
+Codex while remaining easy to distinguish in the Dock.
+
+## Requirements
+
+- A working `/Applications/Codex.app` or `~/Applications/Codex.app`.
+- The `codex` CLI on your `PATH`.
+- `node` 18 or newer.
+- `swift`, `iconutil`, `plutil`, `ditto`, and `codesign`.
 
 ## Install
 
@@ -43,7 +53,7 @@ Edit this private file before testing the provider:
 ```bash
 codex-minimax-proxy start
 codex-minimax-proxy test
-open -n "$HOME/Applications/Codex MiniMax.app"
+codex-minimax-desktop
 ```
 
 ## Remove

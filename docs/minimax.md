@@ -4,7 +4,26 @@ MiniMax is the reference provider profile in this repository. The profile uses a
 local bridge because Codex Desktop expects the Responses API, while many custom
 providers expose an OpenAI-compatible Chat Completions API.
 
-## Install
+## macOS Install
+
+```bash
+export MINIMAX_API_KEY="<your-minimax-api-key>"
+
+./scripts/install-minimax-profile-macos.sh \
+  --id codex-minimax \
+  --name "Codex MiniMax" \
+  --model "MiniMax-M2.7" \
+  --port 4007 \
+  --webview-port 5176
+```
+
+The macOS installer writes the custom app to:
+
+```text
+~/Applications/Codex MiniMax.app
+```
+
+## Linux Install
 
 ```bash
 export MINIMAX_API_KEY="<your-minimax-api-key>"
@@ -17,7 +36,7 @@ export MINIMAX_API_KEY="<your-minimax-api-key>"
   --webview-port 5176
 ```
 
-The installer writes:
+Both installers write:
 
 ```text
 ~/.codex-minimax/config.toml
@@ -28,6 +47,12 @@ The installer writes:
 ~/.local/bin/codex-minimax
 ~/.local/bin/codex-minimax-desktop
 ~/.local/bin/codex-minimax-proxy
+```
+
+The Linux installer also creates the desktop-shell app under:
+
+```text
+~/.local/opt/codex-minimax/codex-app
 ```
 
 ## Test
