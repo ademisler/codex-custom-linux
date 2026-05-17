@@ -2,10 +2,9 @@
 
 Thanks for improving Codex Custom Linux.
 
-Codex Custom Linux is an open-source project created and maintained by Adem
-İşler. Contributions should preserve the project's goal: isolated,
-provider-specific Codex Desktop apps that are safe to publish and easy to
-inspect.
+Codex Custom Linux is an open-source project. Contributions should preserve the
+project's goal: isolated, provider-specific Codex Desktop apps that are safe to
+publish and easy to inspect.
 
 ## Ground Rules
 

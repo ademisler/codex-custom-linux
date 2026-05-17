@@ -28,6 +28,5 @@ unless you add authentication, TLS, logging review, and rate limits.
 ## Reporting Issues
 
 If you find a security issue in this starter kit, open a private advisory or
-contact maintainer Adem İşler directly through GitHub. If the issue is in Codex
-Desktop, Codex CLI, MiniMax, Ollama, or another upstream project, report it to
-that project.
+contact the maintainer through GitHub. If the issue is in Codex Desktop, Codex
+CLI, MiniMax, Ollama, or another upstream project, report it to that project.

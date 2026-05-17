@@ -10,8 +10,8 @@
 </p>
 
 <p align="center">
-  Created and maintained by <a href="https://github.com/ademisler">Adem İşler</a>.
-  Open source under the MIT License.
+  An open-source project by <a href="https://github.com/ademisler">Adem İşler</a>.
+  Released under the MIT License.
 </p>
 
 ---
@@ -19,9 +19,7 @@
 ## What This Is
 
 Codex Custom Linux is a starter kit for people who already have Codex Desktop
-running on Linux and want a second, independent Codex app. It was created by
-Adem İşler to package the custom Codex Desktop workflow into a reusable,
-publishable starter kit.
+running on Linux and want a second, independent Codex app.
 
 The reference app is **Codex MiniMax**: a red-icon Codex Desktop profile that
 uses MiniMax M2.7 through a local OpenAI-compatible bridge.
@@ -35,9 +33,8 @@ own config, data, sessions, provider, icon, and launcher.
 
 ## Open Source
 
-This is an open-source project by Adem İşler, released under the MIT License.
-You can use it, fork it, adapt it for other providers, and contribute fixes or
-improvements through pull requests.
+This project is released under the MIT License. You can use it, fork it, adapt
+it for other providers, and contribute fixes through pull requests.
 
 ## What You Get
 
@@ -220,10 +217,6 @@ make verify
 | [Screenshots and assets](docs/screenshots.md) | Screenshot and README asset guidance. |
 
 ## Why This Exists
-
-Adem İşler built this project to make provider-specific Codex Desktop apps
-clean to install, inspect, and share without mixing them with a primary Codex
-profile.
 
 Ollama documents a Codex provider/profile pattern using an OpenAI-style endpoint:
 [Ollama Codex integration](https://docs.ollama.com/integrations/codex).
